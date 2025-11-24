@@ -1,13 +1,38 @@
 import { createClient } from '@supabase/supabase-js';
 import { Judge, Project, Criterion, Rating, ProjectComment } from '../types';
 
-// NOTA: Estas variables deben configurarse en Vercel (Environment Variables)
-// Si estás probando en local sin build step, tendrás que hardcodearlas temporalmente o usar un .env
-const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.REACT_APP_SUPABASE_URL || '';
-const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY || process.env.REACT_APP_SUPABASE_ANON_KEY || '';
+// Helper seguro para leer variables de entorno (evita crash si 'process' no existe)
+const getEnv = (key: string) => {
+  try {
+    // Soporte para Vite (import.meta.env)
+    // @ts-ignore
+    if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env[key]) {
+      // @ts-ignore
+      return import.meta.env[key];
+    }
+  } catch (e) {}
 
-// Prevent crash if env vars are missing by providing placeholders
-// The isConnected check in App.tsx will still prevent usage if keys are invalid
+  try {
+    // Soporte para Node/Webpack/CRA (process.env)
+    if (typeof process !== 'undefined' && process.env && process.env[key]) {
+      return process.env[key];
+    }
+  } catch (e) {}
+
+  return '';
+};
+
+// Prioridad: 1. Variables de Entorno (Vercel) -> 2. LocalStorage (Config manual en navegador)
+const envUrl = getEnv('VITE_SUPABASE_URL') || getEnv('REACT_APP_SUPABASE_URL');
+const envKey = getEnv('VITE_SUPABASE_ANON_KEY') || getEnv('REACT_APP_SUPABASE_ANON_KEY');
+
+const storedUrl = typeof localStorage !== 'undefined' ? localStorage.getItem('sfe_supabase_url') : '';
+const storedKey = typeof localStorage !== 'undefined' ? localStorage.getItem('sfe_supabase_key') : '';
+
+const supabaseUrl = envUrl || storedUrl || '';
+const supabaseKey = envKey || storedKey || '';
+
+// Inicializar cliente de forma segura con placeholders si falta configuración
 export const supabase = createClient(
   supabaseUrl || 'https://placeholder.supabase.co', 
   supabaseKey || 'placeholder-key'
@@ -15,7 +40,20 @@ export const supabase = createClient(
 
 export const StorageService = {
   // Check connection
-  isConnected: () => !!supabaseUrl && !!supabaseKey,
+  isConnected: () => !!supabaseUrl && !!supabaseKey && supabaseUrl !== 'https://placeholder.supabase.co',
+
+  // Permite guardar credenciales manualmente desde la UI si fallan las env vars
+  saveCredentials: (url: string, key: string) => {
+    localStorage.setItem('sfe_supabase_url', url);
+    localStorage.setItem('sfe_supabase_key', key);
+    window.location.reload(); // Recargar para aplicar cambios
+  },
+
+  clearCredentials: () => {
+    localStorage.removeItem('sfe_supabase_url');
+    localStorage.removeItem('sfe_supabase_key');
+    window.location.reload();
+  },
 
   // Judges
   getJudges: async (): Promise<Judge[]> => {
@@ -25,7 +63,6 @@ export const StorageService = {
   },
   
   addJudge: async (judge: Partial<Judge>) => {
-    // Let Supabase handle ID generation if not provided
     const { id, ...rest } = judge; 
     const { error } = await supabase.from('judges').insert([rest]);
     if (error) throw error;
@@ -76,7 +113,6 @@ export const StorageService = {
   getRatings: async (): Promise<Rating[]> => {
     const { data, error } = await supabase.from('ratings').select('*');
     if (error) console.error('Error fetching ratings:', error);
-    // Map snake_case from DB to camelCase if necessary, but we will assume DB cols match types or use 'as'
     return data?.map(r => ({
       projectId: r.project_id,
       judgeId: r.judge_id,
@@ -86,8 +122,6 @@ export const StorageService = {
   },
 
   saveRating: async (rating: Rating) => {
-    // Upsert logic: Delete existing first or use upsert if constraint exists
-    // Simple approach: Delete match then insert
     const { error: delError } = await supabase
       .from('ratings')
       .delete()
@@ -110,8 +144,8 @@ export const StorageService = {
   },
 
   resetRatings: async () => {
-    const { error: e1 } = await supabase.from('ratings').delete().neq('score', -1); // Delete all
-    const { error: e2 } = await supabase.from('comments').delete().neq('text', ''); // Delete all
+    const { error: e1 } = await supabase.from('ratings').delete().neq('score', -1); 
+    const { error: e2 } = await supabase.from('comments').delete().neq('text', ''); 
     if (e1 || e2) throw new Error('Error resetting data');
   },
 

@@ -7,7 +7,7 @@ import { JudgePanel } from './pages/Judge';
 import { PrintView } from './pages/PrintView';
 import { Button } from './components/Button';
 import { Input } from './components/Input';
-import { Lock, User, LayoutDashboard, FileText, LogOut, AlertTriangle } from 'lucide-react';
+import { Lock, User, LayoutDashboard, FileText, LogOut, AlertTriangle, Settings, CheckCircle2 } from 'lucide-react';
 
 const Router = () => {
   const [route, setRoute] = useState(window.location.hash || '#/');
@@ -19,6 +19,60 @@ const Router = () => {
   }, []);
 
   return route;
+};
+
+// Componente para configuración manual si fallan las env vars
+const ConfigScreen = () => {
+  const [url, setUrl] = useState('');
+  const [key, setKey] = useState('');
+
+  const handleSave = () => {
+    if (url && key) {
+      StorageService.saveCredentials(url, key);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-950 text-white flex items-center justify-center p-4">
+        <div className="max-w-lg w-full bg-slate-900 border border-slate-800 p-8 rounded-2xl shadow-2xl">
+          <div className="text-center mb-8">
+            <AlertTriangle className="w-16 h-16 text-yellow-500 mx-auto mb-4" />
+            <h1 className="text-2xl font-bold mb-2">Conexión Pendiente</h1>
+            <p className="text-slate-400">
+              No se detectaron las variables de entorno de Supabase. Puedes configurarlas manualmente aquí.
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            <div className="bg-slate-800/50 p-4 rounded border border-slate-700 text-sm mb-6">
+                <p className="text-slate-300 font-semibold mb-2">Instrucciones:</p>
+                <ol className="list-decimal list-inside text-slate-400 space-y-1">
+                    <li>Ve a tu proyecto en Supabase → Settings → API</li>
+                    <li>Copia "Project URL" y pégalo abajo.</li>
+                    <li>Copia "anon public key" y pégalo abajo.</li>
+                </ol>
+            </div>
+
+            <Input 
+                label="Supabase Project URL" 
+                placeholder="https://xyz.supabase.co"
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+            />
+            <Input 
+                label="Supabase Anon Key" 
+                placeholder="eyJhbGciOiJIUzI1NiIsInR5..."
+                value={key}
+                onChange={(e) => setKey(e.target.value)}
+            />
+            
+            <Button onClick={handleSave} fullWidth className="mt-4 gap-2">
+                <CheckCircle2 size={20} /> Guardar y Conectar
+            </Button>
+          </div>
+        </div>
+      </div>
+  );
 };
 
 export default function App() {
@@ -53,8 +107,6 @@ export default function App() {
 
       // Judge Check via Supabase
       const judges = await StorageService.getJudges();
-      // Note: In a real production app, use Supabase Auth or hash comparison on backend.
-      // This matches plain text passwords from DB for the "Science Fair" simple use case.
       const judge = judges.find(j => j.name.toLowerCase() === username.toLowerCase() && j.password_hash === password);
       
       if (judge) {
@@ -81,30 +133,19 @@ export default function App() {
     window.location.hash = '#/';
   };
 
+  const handleResetConfig = () => {
+      if(confirm('¿Desvincular base de datos?')) {
+          StorageService.clearCredentials();
+      }
+  };
+
   if (route === '#/print') {
       return <PrintView />;
   }
 
   // Warning if Supabase is not configured
   if (!StorageService.isConnected()) {
-    return (
-      <div className="min-h-screen bg-slate-950 text-white flex items-center justify-center p-4">
-        <div className="max-w-md text-center space-y-4">
-          <AlertTriangle className="w-16 h-16 text-yellow-500 mx-auto" />
-          <h1 className="text-2xl font-bold">Configuración Requerida</h1>
-          <p className="text-slate-400">
-            No se han detectado las credenciales de Supabase.
-          </p>
-          <div className="bg-slate-900 p-4 rounded text-left text-sm font-mono text-slate-300 overflow-x-auto">
-            VITE_SUPABASE_URL=...<br/>
-            VITE_SUPABASE_ANON_KEY=...
-          </div>
-          <p className="text-sm text-slate-500">
-            Por favor configura las variables de entorno en Vercel o en tu archivo .env local.
-          </p>
-        </div>
-      </div>
-    )
+    return <ConfigScreen />;
   }
 
   return (
@@ -143,9 +184,14 @@ export default function App() {
                          </Button>
                     </>
                 ) : (
-                    <Button variant="ghost" onClick={() => window.location.hash = '#/ranking'}>
-                        Ver Ranking
-                    </Button>
+                    <>
+                        <Button variant="ghost" onClick={() => window.location.hash = '#/ranking'}>
+                            Ver Ranking
+                        </Button>
+                        <button onClick={handleResetConfig} className="text-slate-600 hover:text-red-400 p-2" title="Configurar DB">
+                            <Settings size={16} />
+                        </button>
+                    </>
                 )}
             </div>
         </div>
