@@ -76,7 +76,7 @@ export const PrintView: React.FC = () => {
             <div className="border-2 border-black p-8 min-h-[297mm] relative">
               <header className="text-center border-b-2 border-gray-300 pb-6 mb-8">
                 <h2 className="text-4xl font-bold mb-2">{item.project.name}</h2>
-                <p className="text-gray-500 uppercase tracking-widest text-sm">Reporte de Retroalimentación - Feria de Ciencias</p>
+                <p className="text-gray-500 uppercase tracking-widest text-sm">Reporte de Retroalimentación - Challenge Hub</p>
               </header>
 
               <div className="grid grid-cols-2 gap-8 mb-8">
@@ -118,7 +118,7 @@ export const PrintView: React.FC = () => {
               </div>
 
               <footer className="absolute bottom-8 left-8 right-8 text-center text-gray-400 text-xs border-t pt-4">
-                Generado por Sistema de Evaluación de Feria de Ciencias • {new Date().toLocaleDateString()}
+                Generado por Challenge Hub by Isay de los Cientificos • {new Date().toLocaleDateString()}
               </footer>
             </div>
           </div>
