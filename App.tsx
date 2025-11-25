@@ -178,7 +178,7 @@ export default function App() {
               <span className="text-white text-lg">E</span>
             </div>
             <span className="hidden md:inline">
-              Evaluador <span className="text-blue-400">Feria Ciencias</span>
+              Challenge <span className="text-blue-400">Hub</span>
             </span>
           </div>
 
