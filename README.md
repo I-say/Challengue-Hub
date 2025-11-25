@@ -1,11 +1,4 @@
-¡Claro Isay! Aquí tienes el **README profesional en Markdown**, perfectamente formateado para copiar/pegar directamente en tu repositorio GitHub.
-Incluye headers, tablas, badges, estructura, instrucciones, screenshots placeholders, y créditos.
 
----
-
-# ✅ **README.md (versión final lista para GitHub)**
-
-*Copia y pega tal cual:*
 
 ````markdown
 # 🎓 Challengue Estadística 2025
@@ -146,9 +139,7 @@ public/
 
 ## 🌍 Deploy
 
-El proyecto está desplegado en Vercel:
-👉 **[URL de producción aquí]**
-*(En cuanto la pongas, este README quedará listo al 100%)*
+
 
 ---
 
@@ -157,7 +148,7 @@ El proyecto está desplegado en Vercel:
 **Los Científicos · CUGDL**
 
 * Autor principal: **Isay Morales**
-* Colaboradores: *(agrega nombres si deseas)*
+* Colaboradores: Los cientificos
 
 ---
 
@@ -171,16 +162,3 @@ Puedes usarlo, modificarlo y adaptarlo libremente.
 ¡Gracias por visitar este proyecto! 🚀
 Si tienes sugerencias o quieres colaborar, abre un issue o un pull request.
 
-```
-
----
-
-Si quieres, también te genero:
-
-✅ Badges (Vercel, React, TypeScript, Supabase, etc.)  
-✅ Un README alternativo más minimalista  
-✅ Un README estilo “landing” con emojis + colores  
-✅ README bilingüe (ES/EN)
-
-¿Quieres una versión aún más profesional visualmente?
-```
